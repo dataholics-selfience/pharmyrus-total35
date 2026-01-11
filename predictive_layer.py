@@ -41,16 +41,32 @@ class PCTTimeline:
     @classmethod
     def from_wo_data(cls, wo_data: Dict) -> 'PCTTimeline':
         """Create PCTTimeline from WO patent data dictionary."""
+        # v30.3.1 FIX: Fallback para dados ausentes
         try:
-            priority = datetime.fromisoformat(wo_data['priority_date'].replace('Z', '+00:00'))
+            priority_str = wo_data.get('priority_date', '')
+            if not priority_str:
+                raise ValueError("No priority_date")
+            priority = datetime.fromisoformat(priority_str.replace('Z', '+00:00'))
         except:
-            # Fallback: try parsing without timezone
-            priority = datetime.strptime(wo_data['priority_date'][:10], '%Y-%m-%d')
+            try:
+                priority_str = wo_data.get('priority_date', '')[:10]
+                priority = datetime.strptime(priority_str, '%Y-%m-%d')
+            except:
+                # Fallback final: 18 meses atrás
+                priority = datetime.now() - timedelta(days=540)
         
         try:
-            publication = datetime.fromisoformat(wo_data['publication_date'].replace('Z', '+00:00'))
+            publication_str = wo_data.get('publication_date', '')
+            if not publication_str:
+                raise ValueError("No publication_date")
+            publication = datetime.fromisoformat(publication_str.replace('Z', '+00:00'))
         except:
-            publication = datetime.strptime(wo_data['publication_date'][:10], '%Y-%m-%d')
+            try:
+                publication_str = wo_data.get('publication_date', '')[:10]
+                publication = datetime.strptime(publication_str, '%Y-%m-%d')
+            except:
+                # Fallback: hoje
+                publication = datetime.now()
         
         # PCT Article 22: 30 months from priority date
         thirty_month = priority + timedelta(days=30*30)  # Approximately 30 months

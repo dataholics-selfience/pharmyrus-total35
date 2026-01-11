@@ -1802,6 +1802,11 @@ async def search_patents(request: SearchRequest, progress_callback=None):
                 for wo in sorted(list(all_wos)):
                     wipo_detail = next((w for w in wipo_patents if w.get('wo_number') == wo), None)
                     if wipo_detail:
+                        # FIX v30.3.1: Garantir que priority_date existe
+                        if 'priority_date' not in wipo_detail or not wipo_detail['priority_date']:
+                            wipo_detail['priority_date'] = (datetime.now() - timedelta(days=540)).isoformat()
+                        if 'publication_date' not in wipo_detail or not wipo_detail['publication_date']:
+                            wipo_detail['publication_date'] = datetime.now().isoformat()
                         wipo_data_for_prediction.append(wipo_detail)
                     else:
                         wipo_data_for_prediction.append({

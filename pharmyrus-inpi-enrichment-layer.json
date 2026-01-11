@@ -1,0 +1,119 @@
+{
+  "name": "Pharmyrus - INPI Enrichment Layer",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "enrich-br-patents",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-input",
+      "name": "Webhook - BR Patents Input",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "inpi-enrichment-br-patents"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Receber lista de BRs para enriquecer\nconst body = $input.first().json.body || $input.first().json;\nconst brPatents = body.br_patents || [];\n\nif (!Array.isArray(brPatents) || brPatents.length === 0) {\n  throw new Error('❌ Precisa fornecer array br_patents com patentes brasileiras');\n}\n\nconsole.log(`\\n🎯 INPI ENRICHMENT LAYER`);\nconsole.log(`📊 BRs recebidas para enriquecimento: ${brPatents.length}`);\nconsole.log(`🔍 Estratégia: Buscar 1-a-1 no INPI para metadados completos\\n`);\n\n// Preparar array para processar cada BR individualmente\nreturn brPatents.map((br, index) => ({\n  json: {\n    index: index + 1,\n    total: brPatents.length,\n    br_number: br.publication_number || br.br_number || '',\n    original_data: br\n  }\n}));"
+      },
+      "id": "parse-input",
+      "name": "1. Parse BR Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalizar número BR para busca no INPI\nconst data = $input.item.json;\nlet brNumber = data.br_number;\n\n// Remover prefixos e formatar\nbrNumber = brNumber\n  .toUpperCase()\n  .replace(/^BR[\\s-]*/i, '')  // Remove BR prefix\n  .replace(/[\\s-\\/]/g, '')    // Remove espaços, hífens, barras\n  .trim();\n\n// Tentar múltiplos formatos\nconst searchTerms = [\n  brNumber,                           // BR112016014326\n  `BR${brNumber}`,                    // BR112016014326\n  `BR ${brNumber}`,                   // BR 112016014326\n  brNumber.replace(/^(\\d{2})/, '$1 ') // 11 2016014326\n];\n\nconsole.log(`🔎 [${data.index}/${data.total}] Processando: ${data.br_number}`);\nconsole.log(`   Termos de busca: ${searchTerms.slice(0, 2).join(', ')}`);\n\nreturn [{\n  json: {\n    ...data,\n    normalized_number: brNumber,\n    search_terms: searchTerms\n  }\n}];"
+      },
+      "id": "normalize-br",
+      "name": "2. Normalize BR Number",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 0]
+    },
+    {
+      "parameters": {
+        "url": "=https://crawler3-production.up.railway.app/api/data/inpi/patents/details?patent_number={{ $json.normalized_number }}",
+        "options": {
+          "timeout": 90000,
+          "retry": {
+            "maxRetries": 2,
+            "retryInterval": 3000
+          }
+        }
+      },
+      "id": "inpi-detail-search",
+      "name": "3. INPI Detail Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [600, 0],
+      "alwaysOutputData": true,
+      "continueOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Se busca detalhada falhou, tentar busca genérica\nconst data = $('2. Normalize BR Number').item.json;\nconst detailResult = $input.item.json;\n\nlet inpiData = null;\n\n// Verificar se temos dados da busca detalhada\nif (detailResult && detailResult.data && Object.keys(detailResult.data).length > 0) {\n  inpiData = detailResult.data;\n  console.log(`   ✅ Dados detalhados encontrados`);\n  return [{\n    json: {\n      ...data,\n      inpi_data: inpiData,\n      source: 'inpi_detail',\n      skip_generic_search: true\n    }\n  }];\n}\n\n// Se não encontrou, preparar para busca genérica\nconsole.log(`   ⚠️  Detalhes não encontrados, tentando busca genérica...`);\nreturn [{\n  json: {\n    ...data,\n    inpi_data: null,\n    source: 'none',\n    skip_generic_search: false\n  }\n}];"
+      },
+      "id": "check-detail-result",
+      "name": "4. Check Detail Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [800, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip_generic_search }}",
+              "value2": false
+            }
+          ]
+        }
+      },
+      "id": "if-need-generic",
+      "name": "5. IF Need Generic Search",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1000, 0]
+    },
+    {
+      "parameters": {
+        "url": "=https://crawler3-production.up.railway.app/api/data/inpi/patents?medicine={{ $json.search_terms[0] }}",
+        "options": {
+          "timeout": 90000
+        }
+      },
+      "id": "inpi-generic-search-1",
+      "name": "6a. INPI Generic Search (Term 1)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, -100],
+      "alwaysOutputData": true,
+      "continueOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://crawler3-production.up.railway.app/api/data/inpi/patents?medicine={{ $json.search_terms[1] }}",
+        "options": {
+          "timeout": 90000
+        }
+      },
+      "id": "inpi-generic-search-2",
+      "name": "6b. INPI Generic Search (Term 2)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 0],
+      "alwaysOutputData": true,
+      "continueOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge resultados das buscas genéricas\nconst originalData = $('5. IF Need Generic Search').item.json;\nconst search1 
