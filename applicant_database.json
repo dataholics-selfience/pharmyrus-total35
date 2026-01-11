@@ -1,0 +1,467 @@
+{
+  "Pfizer Inc": {
+    "applicant_name": "Pfizer Inc",
+    "total_wo_brazil_designated": 45,
+    "total_br_filings_found": 39,
+    "filing_rate": 0.88,
+    "therapeutic_areas": [
+      "Oncology",
+      "Vaccines",
+      "Rare Diseases"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873709",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "Roche": {
+    "applicant_name": "Roche",
+    "total_wo_brazil_designated": 52,
+    "total_br_filings_found": 46,
+    "filing_rate": 0.9,
+    "therapeutic_areas": [
+      "Oncology",
+      "Immunology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873724",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "Novartis AG": {
+    "applicant_name": "Novartis AG",
+    "total_wo_brazil_designated": 48,
+    "total_br_filings_found": 43,
+    "filing_rate": 0.91,
+    "therapeutic_areas": [
+      "Oncology",
+      "Immunology",
+      "Ophthalmology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873729",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "Bayer AG": {
+    "applicant_name": "Bayer AG",
+    "total_wo_brazil_designated": 42,
+    "total_br_filings_found": 39,
+    "filing_rate": 0.93,
+    "therapeutic_areas": [
+      "Oncology",
+      "Cardiovascular",
+      "Hematology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873731",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "Merck & Co": {
+    "applicant_name": "Merck & Co",
+    "total_wo_brazil_designated": 39,
+    "total_br_filings_found": 33,
+    "filing_rate": 0.87,
+    "therapeutic_areas": [
+      "Oncology",
+      "Vaccines",
+      "Diabetes"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873733",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "GlaxoSmithKline": {
+    "applicant_name": "GlaxoSmithKline",
+    "total_wo_brazil_designated": 35,
+    "total_br_filings_found": 29,
+    "filing_rate": 0.85,
+    "therapeutic_areas": [
+      "Vaccines",
+      "Respiratory",
+      "HIV"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873735",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "Sanofi": {
+    "applicant_name": "Sanofi",
+    "total_wo_brazil_designated": 38,
+    "total_br_filings_found": 32,
+    "filing_rate": 0.86,
+    "therapeutic_areas": [
+      "Diabetes",
+      "Vaccines",
+      "Rare Diseases"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873737",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "AstraZeneca": {
+    "applicant_name": "AstraZeneca",
+    "total_wo_brazil_designated": 44,
+    "total_br_filings_found": 39,
+    "filing_rate": 0.89,
+    "therapeutic_areas": [
+      "Oncology",
+      "Cardiovascular",
+      "Respiratory"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873739",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "Johnson & Johnson": {
+    "applicant_name": "Johnson & Johnson",
+    "total_wo_brazil_designated": 41,
+    "total_br_filings_found": 36,
+    "filing_rate": 0.88,
+    "therapeutic_areas": [
+      "Oncology",
+      "Immunology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873745",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "Bristol-Myers Squibb": {
+    "applicant_name": "Bristol-Myers Squibb",
+    "total_wo_brazil_designated": 37,
+    "total_br_filings_found": 32,
+    "filing_rate": 0.87,
+    "therapeutic_areas": [
+      "Oncology",
+      "Immunology",
+      "Cardiovascular"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873747",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "Eli Lilly": {
+    "applicant_name": "Eli Lilly",
+    "total_wo_brazil_designated": 34,
+    "total_br_filings_found": 29,
+    "filing_rate": 0.86,
+    "therapeutic_areas": [
+      "Diabetes",
+      "Oncology",
+      "Immunology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873749",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "AbbVie": {
+    "applicant_name": "AbbVie",
+    "total_wo_brazil_designated": 36,
+    "total_br_filings_found": 31,
+    "filing_rate": 0.88,
+    "therapeutic_areas": [
+      "Immunology",
+      "Oncology",
+      "Virology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873751",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "Takeda": {
+    "applicant_name": "Takeda",
+    "total_wo_brazil_designated": 28,
+    "total_br_filings_found": 22,
+    "filing_rate": 0.82,
+    "therapeutic_areas": [
+      "Oncology",
+      "GI",
+      "Neuroscience"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873752",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "medium"
+  },
+  "Boehringer Ingelheim": {
+    "applicant_name": "Boehringer Ingelheim",
+    "total_wo_brazil_designated": 30,
+    "total_br_filings_found": 25,
+    "filing_rate": 0.84,
+    "therapeutic_areas": [
+      "Cardiology",
+      "Respiratory",
+      "Oncology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873754",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "Amgen": {
+    "applicant_name": "Amgen",
+    "total_wo_brazil_designated": 33,
+    "total_br_filings_found": 28,
+    "filing_rate": 0.87,
+    "therapeutic_areas": [
+      "Oncology",
+      "Bone Health",
+      "Cardiovascular"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873756",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "high"
+  },
+  "Gilead Sciences": {
+    "applicant_name": "Gilead Sciences",
+    "total_wo_brazil_designated": 25,
+    "total_br_filings_found": 20,
+    "filing_rate": 0.83,
+    "therapeutic_areas": [
+      "HIV",
+      "Hepatitis",
+      "Oncology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873758",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "medium"
+  },
+  "Biogen": {
+    "applicant_name": "Biogen",
+    "total_wo_brazil_designated": 22,
+    "total_br_filings_found": 17,
+    "filing_rate": 0.8,
+    "therapeutic_areas": [
+      "Neurology",
+      "Multiple Sclerosis"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873759",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "medium"
+  },
+  "Regeneron": {
+    "applicant_name": "Regeneron",
+    "total_wo_brazil_designated": 20,
+    "total_br_filings_found": 16,
+    "filing_rate": 0.81,
+    "therapeutic_areas": [
+      "Ophthalmology",
+      "Immunology",
+      "Oncology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873761",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "medium"
+  },
+  "Vertex Pharmaceuticals": {
+    "applicant_name": "Vertex Pharmaceuticals",
+    "total_wo_brazil_designated": 18,
+    "total_br_filings_found": 14,
+    "filing_rate": 0.79,
+    "therapeutic_areas": [
+      "Cystic Fibrosis",
+      "Rare Diseases"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873765",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "medium"
+  },
+  "Alexion": {
+    "applicant_name": "Alexion",
+    "total_wo_brazil_designated": 16,
+    "total_br_filings_found": 12,
+    "filing_rate": 0.78,
+    "therapeutic_areas": [
+      "Rare Diseases",
+      "Hematology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873766",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "medium"
+  },
+  "Incyte": {
+    "applicant_name": "Incyte",
+    "total_wo_brazil_designated": 15,
+    "total_br_filings_found": 11,
+    "filing_rate": 0.76,
+    "therapeutic_areas": [
+      "Oncology",
+      "Inflammation"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873768",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "medium"
+  },
+  "BioMarin": {
+    "applicant_name": "BioMarin",
+    "total_wo_brazil_designated": 14,
+    "total_br_filings_found": 10,
+    "filing_rate": 0.75,
+    "therapeutic_areas": [
+      "Rare Diseases",
+      "Enzyme Therapy"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873770",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "low"
+  },
+  "Alnylam": {
+    "applicant_name": "Alnylam",
+    "total_wo_brazil_designated": 13,
+    "total_br_filings_found": 9,
+    "filing_rate": 0.74,
+    "therapeutic_areas": [
+      "RNAi Therapeutics",
+      "Rare Diseases"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873772",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "low"
+  },
+  "Moderna": {
+    "applicant_name": "Moderna",
+    "total_wo_brazil_designated": 12,
+    "total_br_filings_found": 8,
+    "filing_rate": 0.72,
+    "therapeutic_areas": [
+      "mRNA Vaccines",
+      "Oncology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873773",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "low"
+  },
+  "BioNTech": {
+    "applicant_name": "BioNTech",
+    "total_wo_brazil_designated": 11,
+    "total_br_filings_found": 7,
+    "filing_rate": 0.71,
+    "therapeutic_areas": [
+      "mRNA Vaccines",
+      "Oncology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873775",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "low"
+  },
+  "Teva": {
+    "applicant_name": "Teva",
+    "total_wo_brazil_designated": 20,
+    "total_br_filings_found": 9,
+    "filing_rate": 0.45,
+    "therapeutic_areas": [
+      "Generics",
+      "CNS"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873777",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "medium"
+  },
+  "Mylan": {
+    "applicant_name": "Mylan",
+    "total_wo_brazil_designated": 18,
+    "total_br_filings_found": 7,
+    "filing_rate": 0.42,
+    "therapeutic_areas": [
+      "Generics",
+      "Complex Generics"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873778",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "medium"
+  },
+  "Sandoz": {
+    "applicant_name": "Sandoz",
+    "total_wo_brazil_designated": 22,
+    "total_br_filings_found": 10,
+    "filing_rate": 0.48,
+    "therapeutic_areas": [
+      "Biosimilars",
+      "Generics"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873780",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "medium"
+  },
+  "Dr. Reddys": {
+    "applicant_name": "Dr. Reddys",
+    "total_wo_brazil_designated": 15,
+    "total_br_filings_found": 6,
+    "filing_rate": 0.4,
+    "therapeutic_areas": [
+      "Generics",
+      "API"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873791",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "medium"
+  },
+  "Eurofarma": {
+    "applicant_name": "Eurofarma",
+    "total_wo_brazil_designated": 8,
+    "total_br_filings_found": 7,
+    "filing_rate": 0.95,
+    "therapeutic_areas": [
+      "Generics",
+      "OTC"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873793",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "low"
+  },
+  "Hypera": {
+    "applicant_name": "Hypera",
+    "total_wo_brazil_designated": 6,
+    "total_br_filings_found": 5,
+    "filing_rate": 0.93,
+    "therapeutic_areas": [
+      "Branded Generics",
+      "OTC"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873795",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "low"
+  },
+  "EMS": {
+    "applicant_name": "EMS",
+    "total_wo_brazil_designated": 7,
+    "total_br_filings_found": 6,
+    "filing_rate": 0.94,
+    "therapeutic_areas": [
+      "Generics",
+      "Branded"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873796",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "low"
+  },
+  "Aché": {
+    "applicant_name": "Aché",
+    "total_wo_brazil_designated": 5,
+    "total_br_filings_found": 4,
+    "filing_rate": 0.92,
+    "therapeutic_areas": [
+      "Branded Generics",
+      "Dermatology"
+    ],
+    "last_updated": "2026-01-10T21:47:36.873798",
+    "data_source": "industry_research_2019_2024",
+    "confidence": "low"
+  },
+  "Example Pharma Inc": {
+    "applicant_name": "Example Pharma Inc",
+    "total_wo_brazil_designated": 3,
+    "total_br_filings_found": 2,
+    "filing_rate": 0.67,
+    "therapeutic_areas": [
+      "Test Therapy"
+    ],
+    "observed_wos": [
+      "WO2023000002",
+      "WO2023000003",
+      "WO2023000001"
+    ],
+    "observed_brs": [
+      "WO2023000002",
+      "WO2023000001"
+    ],
+    "last_updated": "2026-01-11T00:08:48.191480",
+    "data_source": "learned_from_searches",
+    "confidence": "low"
+  }
+}
