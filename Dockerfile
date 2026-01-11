@@ -1,4 +1,4 @@
-# Pharmyrus v30.3-PREDICTIVE Dockerfile
+# Pharmyrus v30.3-PREDICTIVE - Complete Integration
 FROM python:3.11-slim
 
 # Set working directory
@@ -9,29 +9,38 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements FIRST (better Docker cache)
+# Copy requirements
 COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers
+# Install Playwright
 RUN playwright install chromium
 RUN playwright install-deps chromium
 
-# Copy main application
-COPY main_v30.3_PREDICTIVE.py main.py
+# Copy main application (v30.3 integrated)
+COPY main_v30.3_INTEGRATED.py main.py
 
-# Copy predictive layer (v30.3 NEW)
+# Copy v30.3 predictive layer
 COPY predictive_layer.py .
 COPY applicant_learning.py .
 COPY applicant_database.json .
 
-# Copy existing crawlers (v30.2 - REQUIRED)
+# Copy v30.2 existing modules (ALL REQUIRED)
 COPY google_patents_crawler.py .
 COPY inpi_crawler.py .
 COPY merge_logic.py .
 COPY patent_cliff.py .
+COPY wipo_crawler.py .
+COPY celery_app.py .
+COPY family_resolver.py .
+COPY materialization.py .
+COPY tasks.py .
+COPY wipo_crawler_v2.py .
+
+# Copy core module if exists
+COPY core/ ./core/ 2>/dev/null || true
 
 # Expose port
 EXPOSE 8000
