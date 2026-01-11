@@ -39,8 +39,8 @@ COPY materialization.py .
 COPY tasks.py .
 COPY wipo_crawler_v2.py .
 
-# Copy core module if exists
-COPY core/ ./core/ 2>/dev/null || true
+# Copy core module (if exists, won't fail if missing)
+COPY core ./core
 
 # Expose port
 EXPOSE 8000
