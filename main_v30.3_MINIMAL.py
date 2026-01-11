@@ -1828,6 +1828,56 @@ async def search_patents(request: SearchRequest, progress_callback=None):
                 
                 inferred = len(response_data.get('predictive_intelligence', {}).get('inferred_events', []))
                 logger.info(f"✅ Predictive layer added: {inferred} inferred events")
+                
+                # v30.3.2: INTEGRAR predições nas contagens (SEM misturar com dados reais)
+                if inferred > 0:
+                    pred_intel = response_data.get('predictive_intelligence', {})
+                    pred_summary = pred_intel.get('summary', {})
+                    inferred_events = pred_intel.get('inferred_events', [])
+                    
+                    # Contar predições por tier
+                    high_confidence = sum(1 for e in inferred_events 
+                                         if e.get('brazilian_prediction', {}).get('confidence_analysis', {}).get('confidence_tier') == 'INFERRED')
+                    expected = sum(1 for e in inferred_events 
+                                  if e.get('brazilian_prediction', {}).get('confidence_analysis', {}).get('confidence_tier') == 'EXPECTED')
+                    
+                    # Atualizar summary com contadores separados
+                    response_data['patent_discovery']['summary']['predictive_br_events'] = {
+                        'total_inferred': inferred,
+                        'high_confidence_inferred': high_confidence,
+                        'expected': expected,
+                        'note': 'These are PREDICTED filings, not actual patents found'
+                    }
+                    
+                    # Atualizar audit considerando predições high-confidence
+                    if high_confidence > 0:
+                        current_found = response_data['cortellis_audit']['found']
+                        potential_match = min(high_confidence, response_data['cortellis_audit']['missing'])
+                        
+                        response_data['cortellis_audit']['predictive_analysis'] = {
+                            'high_confidence_predictions': high_confidence,
+                            'potential_additional_matches': potential_match,
+                            'adjusted_recall_if_predictions_valid': round(
+                                (current_found + potential_match) / response_data['cortellis_audit']['total_cortellis_brs'] * 100, 1
+                            ),
+                            'note': 'Predictions are INFERRED, not confirmed. Use for FTO planning only.'
+                        }
+                    
+                    # Adicionar seção de cliff prediction (sem alterar cliff real)
+                    response_data['patent_discovery']['predictive_patent_cliff'] = {
+                        'note': 'Estimated based on predicted BR filings',
+                        'total_predicted_events': inferred,
+                        'expected_filings_next_30_months': sum(
+                            1 for e in inferred_events
+                            if e.get('brazilian_prediction', {}).get('pct_timeline', {}).get('deadline_status') == 'open'
+                        ),
+                        'estimated_coverage_extension_years': round(inferred / 30, 1) if inferred > 30 else 0
+                    }
+                    
+                    logger.info(f"   📊 Integrated {inferred} predictions into summaries")
+                    logger.info(f"      - High confidence: {high_confidence}")
+                    logger.info(f"      - Expected tier: {expected}")
+                    
             except Exception as e:
                 logger.warning(f"⚠️  Predictive layer skipped: {e}")
         
