@@ -52,6 +52,15 @@ try:
 except ImportError:
     PREDICTIVE_AVAILABLE = False
 
+# v30.4: Import Enhanced Reporting (NEW - Legal disclaimers & reporting)
+try:
+    from enhanced_reporting import enhance_json_output
+    ENHANCED_REPORTING_AVAILABLE = True
+    logger.info("✅ Enhanced Reporting v30.4 module loaded")
+except ImportError:
+    ENHANCED_REPORTING_AVAILABLE = False
+    logger.warning("⚠️ Enhanced Reporting v30.4 not available")
+
 # Import Celery tasks (IMPORTANT: Must be imported at module level for worker to discover)
 try:
     from celery_app import search_task
@@ -1880,6 +1889,24 @@ async def search_patents(request: SearchRequest, progress_callback=None):
                     
             except Exception as e:
                 logger.warning(f"⚠️  Predictive layer skipped: {e}")
+        
+        # ===== v30.4: ENHANCED REPORTING LAYER =====
+        # Aplicar disclaimers jurídicos, contabilização detalhada e análises
+        if ENHANCED_REPORTING_AVAILABLE:
+            try:
+                logger.info("📋 Applying Enhanced Reporting v30.4...")
+                response_data = enhance_json_output(response_data)
+                logger.info("✅ Enhanced Reporting applied successfully")
+                logger.info("   - Legal disclaimers (PT/EN) added")
+                logger.info("   - Cortellis audit enhanced with predictive analysis")
+                logger.info("   - Patent cliff future analysis added")
+                logger.info("   - Individual event warnings added")
+            except Exception as e:
+                logger.error(f"⚠️ Enhanced Reporting failed: {e}")
+                logger.error(f"   Continuing with standard output...")
+                # Não quebra a busca, apenas continua sem enhancement
+        else:
+            logger.info("⏭️  Enhanced Reporting v30.4 not available - using standard output")
         
         logger.info("   ✅ Response built successfully")
         logger.info(f"🎉 Search complete in {elapsed:.2f}s!")
