@@ -44,7 +44,7 @@ from merge_logic import merge_br_patents
 # Import Patent Cliff Calculator
 from patent_cliff import calculate_patent_cliff
 
-# Import Predictive Layer (v30.3)
+# v30.3: Import Predictive Layer (MINIMAL - 3 lines)
 try:
     from predictive_layer import add_predictive_layer, ApplicantBehavior
     from applicant_learning import get_learning_system
@@ -52,24 +52,24 @@ try:
 except ImportError:
     PREDICTIVE_AVAILABLE = False
 
-# Logging - DEVE VIR ANTES do enhanced_reporting import
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("pharmyrus")
-
-# v30.4: Import Enhanced Reporting (NEW - Legal disclaimers & reporting)
-try:
-    from enhanced_reporting import enhance_json_output
-    ENHANCED_REPORTING_AVAILABLE = True
-    logger.info("✅ Enhanced Reporting v30.4 module loaded")
-except ImportError:
-    ENHANCED_REPORTING_AVAILABLE = False
-    logger.warning("⚠️ Enhanced Reporting v30.4 not available")
-
 # Import Celery tasks (IMPORTANT: Must be imported at module level for worker to discover)
 try:
     from celery_app import search_task
 except ImportError:
     search_task = None  # Will be None if running without Celery
+
+# Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("pharmyrus")
+
+# v30.4: Enhanced Reporting
+try:
+    from enhanced_reporting import enhance_json_output
+    ENHANCED_REPORTING_AVAILABLE = True
+    logger.info("✅ Enhanced Reporting v30.4 loaded")
+except ImportError:
+    ENHANCED_REPORTING_AVAILABLE = False
+    logger.warning("⚠️  Enhanced Reporting v30.4 not available")
 
 # EPO Credentials (MESMAS QUE FUNCIONAM)
 EPO_KEY = "G5wJypxeg0GXEJoMGP37tdK370aKxeMszGKAkD6QaR0yiR5X"
@@ -1890,23 +1890,14 @@ async def search_patents(request: SearchRequest, progress_callback=None):
             except Exception as e:
                 logger.warning(f"⚠️  Predictive layer skipped: {e}")
         
-        # ===== v30.4: ENHANCED REPORTING LAYER =====
-        # Aplicar disclaimers jurídicos, contabilização detalhada e análises
+        # v30.4: Enhanced Reporting
         if ENHANCED_REPORTING_AVAILABLE:
             try:
                 logger.info("📋 Applying Enhanced Reporting v30.4...")
                 response_data = enhance_json_output(response_data)
-                logger.info("✅ Enhanced Reporting applied successfully")
-                logger.info("   - Legal disclaimers (PT/EN) added")
-                logger.info("   - Cortellis audit enhanced with predictive analysis")
-                logger.info("   - Patent cliff future analysis added")
-                logger.info("   - Individual event warnings added")
+                logger.info("✅ Enhanced Reporting applied")
             except Exception as e:
-                logger.error(f"⚠️ Enhanced Reporting failed: {e}")
-                logger.error(f"   Continuing with standard output...")
-                # Não quebra a busca, apenas continua sem enhancement
-        else:
-            logger.info("⏭️  Enhanced Reporting v30.4 not available - using standard output")
+                logger.error(f"⚠️  Enhanced Reporting failed: {e}")
         
         logger.info("   ✅ Response built successfully")
         logger.info(f"🎉 Search complete in {elapsed:.2f}s!")
