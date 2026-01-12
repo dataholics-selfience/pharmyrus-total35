@@ -44,13 +44,17 @@ from merge_logic import merge_br_patents
 # Import Patent Cliff Calculator
 from patent_cliff import calculate_patent_cliff
 
-# v30.3: Import Predictive Layer (MINIMAL - 3 lines)
+# Import Predictive Layer (v30.3)
 try:
     from predictive_layer import add_predictive_layer, ApplicantBehavior
     from applicant_learning import get_learning_system
     PREDICTIVE_AVAILABLE = True
 except ImportError:
     PREDICTIVE_AVAILABLE = False
+
+# Logging - DEVE VIR ANTES do enhanced_reporting import
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("pharmyrus")
 
 # v30.4: Import Enhanced Reporting (NEW - Legal disclaimers & reporting)
 try:
@@ -66,10 +70,6 @@ try:
     from celery_app import search_task
 except ImportError:
     search_task = None  # Will be None if running without Celery
-
-# Logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("pharmyrus")
 
 # EPO Credentials (MESMAS QUE FUNCIONAM)
 EPO_KEY = "G5wJypxeg0GXEJoMGP37tdK370aKxeMszGKAkD6QaR0yiR5X"
