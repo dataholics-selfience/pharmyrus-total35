@@ -393,15 +393,34 @@ class PredictiveInferenceEngine:
             family_score = 0.45
             family_reasoning = f"Very small family ({family_size} members) indicates minimal commercial interest"
         
-        # Weighted combination - v30.5 ADJUSTED WEIGHTS
-        # OLD: timeline 30%, applicant 40%, market 20%, family 10%
-        # NEW: timeline 25%, applicant 50%, market 10%, family 15%
-        # Rationale: Applicant behavior é o melhor preditor, family size também importante
+        # v30.5 ADAPTIVE WEIGHTS - Ajusta pesos baseado em conhecimento do applicant
+        # Se applicant é CONHECIDO (score > 0.60): usa pesos orientados a applicant
+        # Se applicant é DESCONHECIDO (score <= 0.60): redistribui peso para timeline+family
+        
+        is_known_applicant = applicant_score > 0.60
+        
+        if is_known_applicant:
+            # CONHECIDO: Applicant é preditor forte
+            # Pesos: timeline 25%, applicant 50%, market 10%, family 15%
+            weight_timeline = 0.25
+            weight_applicant = 0.50
+            weight_market = 0.10
+            weight_family = 0.15
+            methodology_note = "Known applicant - applicant-weighted"
+        else:
+            # DESCONHECIDO: Redistribui peso do applicant para timeline+family
+            # Pesos: timeline 35%, applicant 30%, market 10%, family 25%
+            weight_timeline = 0.35
+            weight_applicant = 0.30
+            weight_market = 0.10
+            weight_family = 0.25
+            methodology_note = "Unknown applicant - timeline+family weighted"
+        
         overall_confidence = (
-            timeline_score * 0.25 +      # Reduced from 0.30
-            applicant_score * 0.50 +     # Increased from 0.40
-            market_score * 0.10 +        # Reduced from 0.20
-            family_score * 0.15          # Increased from 0.10
+            timeline_score * weight_timeline +
+            applicant_score * weight_applicant +
+            market_score * weight_market +
+            family_score * weight_family
         )
         
         # Never exceed 0.95 (0.95-1.00 reserved for PUBLISHED tier)
@@ -413,32 +432,33 @@ class PredictiveInferenceEngine:
         return {
             "overall_confidence": round(overall_confidence, 2),
             "confidence_tier": tier,
+            "methodology_note": methodology_note,
             "factors": {
                 "pct_timeline": {
                     "score": round(timeline_score, 2),
-                    "weight": 0.25,  # Updated
+                    "weight": weight_timeline,
                     "reasoning": timeline_reasoning
                 },
                 "applicant_behavior": {
                     "score": round(applicant_score, 2),
-                    "weight": 0.50,  # Updated
+                    "weight": weight_applicant,
                     "historical_br_filing_rate": f"{applicant.filing_rate:.0%} ({applicant.total_br_filings_found}/{applicant.total_wo_brazil_designated})",
                     "reasoning": applicant_reasoning
                 },
                 "market_relevance": {
                     "score": round(market_score, 2),
-                    "weight": 0.10,  # Updated
+                    "weight": weight_market,
                     "therapeutic_area": market.therapeutic_area,
                     "reasoning": market_reasoning
                 },
                 "patent_family_strength": {
                     "score": round(family_score, 2),
-                    "weight": 0.15,  # Updated
+                    "weight": weight_family,
                     "family_size": family_size,
                     "reasoning": family_reasoning
                 }
             },
-            "combined_methodology": f"Weighted: PCT({timeline_score:.2f})×0.25 + Applicant({applicant_score:.2f})×0.50 + Market({market_score:.2f})×0.10 + Family({family_score:.2f})×0.15 = {overall_confidence:.2f}"
+            "combined_methodology": f"Weighted ({methodology_note}): PCT({timeline_score:.2f})×{weight_timeline:.2f} + Applicant({applicant_score:.2f})×{weight_applicant:.2f} + Market({market_score:.2f})×{weight_market:.2f} + Family({family_score:.2f})×{weight_family:.2f} = {overall_confidence:.2f}"
         }
     
     def classify_tier(self, confidence: float) -> str:

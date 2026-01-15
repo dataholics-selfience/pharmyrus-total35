@@ -1296,7 +1296,9 @@ async def search_patents(request: SearchRequest, progress_callback=None):
                 molecule=molecule,
                 brand=brand,
                 dev_codes=all_dev_codes,  # v29.2: inclui CAS
-                groq_api_key=groq_key
+                groq_api_key=groq_key,
+                username=INPI_USERNAME,
+                password=INPI_PASSWORD
             )
         
         logger.info(f"   ✅ INPI found: {len(inpi_patents)} BR patents")

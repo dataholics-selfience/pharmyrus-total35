@@ -54,8 +54,8 @@ class INPICrawler:
         brand: str,
         dev_codes: List[str],
         groq_api_key: str,
-        username: str = "dnm48",
-        password: str = "coresxxx"
+        username: str,
+        password: str
     ) -> List[Dict]:
         """
         Search INPI with LOGIN - COMPLETE FLOW
@@ -342,10 +342,10 @@ class INPICrawler:
                 await asyncio.sleep(2)
             
             # Fill search form
-            await self.page.fill('input[name="ExpressaoPesquisa"]', term, timeout=20000)
+            await self.page.fill('input[name="ExpressaoPesquisa"]', term, timeout=30000)  # v30.5: 20s → 30s
             
             # Select field (Titulo or Resumo) with timeout
-            await self.page.select_option('select[name="Coluna"]', field, timeout=20000)
+            await self.page.select_option('select[name="Coluna"]', field, timeout=30000)  # v30.5: 20s → 30s
             
             # Select "todas as palavras"
             await self.page.select_option('select[name="FormaPesquisa"]', 'todasPalavras', timeout=20000)
