@@ -817,7 +817,7 @@ class INPICrawler:
             traceback.print_exc()
             return {'patent_number': br_number, 'country': 'BR'}
     
-    async def search_by_numbers(self, br_numbers: List[str], username: str = "dnm48", password: str = "coresxxx") -> List[Dict]:
+    async def search_by_numbers(self, br_numbers: List[str], username: str, password: str) -> List[Dict]:
         """
         Search INPI by patent numbers using ADVANCED SEARCH
         Used to enrich BR patents found via EPO
@@ -846,66 +846,85 @@ class INPICrawler:
                 
                 # Search each BR by number using ADVANCED SEARCH
                 for i, br_number in enumerate(br_numbers, 1):
-                    try:
-                        logger.info(f"   📄 {i}/{len(br_numbers)}: {br_number}")
-                        
-                        # Format BR number for search (keep as is)
-                        search_term = br_number.strip()
-                        
-                        # Go to ADVANCED search page
-                        await self.page.goto(
-                            "https://busca.inpi.gov.br/pePI/jsp/patentes/PatenteSearchAvancado.jsp",
-                            wait_until='networkidle',
-                            timeout=30000
-                        )
-                        await asyncio.sleep(1)
-                        
-                        # Fill NumPedido field (21) - Patent Number
-                        await self.page.fill('input[name="NumPedido"]', search_term, timeout=20000)
-                        
-                        # Click Search button
-                        await self.page.click('input[type="submit"][name="botao"]', timeout=20000)
-                        await self.page.wait_for_load_state('networkidle', timeout=30000)
-                        await asyncio.sleep(2)
-                        
-                        # Check results
-                        content = await self.page.content()
-                        
-                        if "Nenhum resultado foi encontrado" in content:
-                            logger.warning(f"      ⚠️  No results found for {br_number}")
-                            continue
-                        
-                        # Find and click detail link
-                        if "Action=detail" in content:
-                            soup = BeautifulSoup(content, 'html.parser')
-                            first_link = soup.find('a', href=re.compile(r'Action=detail'))
+                    max_retries = 2  # v30.5: Retry timeout errors
+                    retry_delay = 3  # seconds
+                    
+                    for attempt in range(max_retries):
+                        try:
+                            if attempt > 0:
+                                logger.warning(f"      🔄 Retry {attempt}/{max_retries-1} for {br_number}")
+                                await asyncio.sleep(retry_delay * attempt)  # Backoff exponencial
                             
-                            if first_link:
-                                # Click to go to detail page
-                                await self.page.click(f'a[href*="Action=detail"]', timeout=20000)
-                                await self.page.wait_for_load_state('networkidle', timeout=30000)
-                                await asyncio.sleep(2)
+                            logger.info(f"   📄 {i}/{len(br_numbers)}: {br_number}")
+                            
+                            # Format BR number for search (keep as is)
+                            search_term = br_number.strip()
+                            
+                            # Go to ADVANCED search page
+                            await self.page.goto(
+                                "https://busca.inpi.gov.br/pePI/jsp/patentes/PatenteSearchAvancado.jsp",
+                                wait_until='networkidle',
+                                timeout=30000
+                            )
+                            await asyncio.sleep(1)
+                            
+                            # Fill NumPedido field (21) - Patent Number
+                            await self.page.fill('input[name="NumPedido"]', search_term, timeout=20000)
+                            
+                            # Click Search button
+                            await self.page.click('input[type="submit"][name="botao"]', timeout=20000)
+                            await self.page.wait_for_load_state('networkidle', timeout=30000)
+                            await asyncio.sleep(2)
+                            
+                            # Check results
+                            content = await self.page.content()
+                            
+                            if "Nenhum resultado foi encontrado" in content:
+                                logger.warning(f"      ⚠️  No results found for {br_number}")
+                                break  # Não retry se não tem resultado
+                            
+                            # Find and click detail link
+                            if "Action=detail" in content:
+                                soup = BeautifulSoup(content, 'html.parser')
+                                first_link = soup.find('a', href=re.compile(r'Action=detail'))
                                 
-                                # Parse details
-                                details = await self._parse_patent_details(br_number)
-                                if details and details.get('patent_number'):
-                                    details['source'] = 'INPI'
-                                    all_patents.append(details)
-                                    logger.info(f"      ✅ Got details for {br_number}")
+                                if first_link:
+                                    # Click to go to detail page
+                                    await self.page.click(f'a[href*="Action=detail"]', timeout=20000)
+                                    await self.page.wait_for_load_state('networkidle', timeout=30000)
+                                    await asyncio.sleep(2)
+                                    
+                                    # Parse details
+                                    details = await self._parse_patent_details(br_number)
+                                    if details and details.get('patent_number'):
+                                        details['source'] = 'INPI'
+                                        all_patents.append(details)
+                                        logger.info(f"      ✅ Got details for {br_number}")
+                                    else:
+                                        logger.warning(f"      ⚠️  Could not parse details for {br_number}")
                                 else:
-                                    logger.warning(f"      ⚠️  Could not parse details for {br_number}")
+                                    logger.warning(f"      ⚠️  Could not find detail link for {br_number}")
                             else:
-                                logger.warning(f"      ⚠️  Could not find detail link for {br_number}")
-                        else:
-                            logger.warning(f"      ⚠️  No detail link in results for {br_number}")
+                                logger.warning(f"      ⚠️  No detail link in results for {br_number}")
+                            
+                            # Sucesso - sair do loop de retry
+                            break
+                            
+                        except Exception as e:
+                            error_msg = str(e)
+                            is_timeout = "Timeout" in error_msg or "timeout" in error_msg.lower()
+                            
+                            if is_timeout and attempt < max_retries - 1:
+                                logger.warning(f"      ⏱️  Timeout on attempt {attempt+1}/{max_retries} for {br_number}")
+                                continue  # Retry
+                            else:
+                                # Última tentativa ou erro não-timeout
+                                logger.error(f"      ❌ Error searching {br_number}: {error_msg}")
+                                if attempt == max_retries - 1:
+                                    logger.error(f"      ❌ Failed after {max_retries} attempts")
+                                break
                         
                         await asyncio.sleep(2)  # Rate limit between searches
-                        
-                    except Exception as e:
-                        logger.error(f"      ❌ Error searching {br_number}: {str(e)}")
-                        import traceback
-                        logger.error(f"      Traceback: {traceback.format_exc()}")
-                        continue
                 
                 await self.browser.close()
                 

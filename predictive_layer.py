@@ -393,12 +393,15 @@ class PredictiveInferenceEngine:
             family_score = 0.45
             family_reasoning = f"Very small family ({family_size} members) indicates minimal commercial interest"
         
-        # Weighted combination
+        # Weighted combination - v30.5 ADJUSTED WEIGHTS
+        # OLD: timeline 30%, applicant 40%, market 20%, family 10%
+        # NEW: timeline 25%, applicant 50%, market 10%, family 15%
+        # Rationale: Applicant behavior é o melhor preditor, family size também importante
         overall_confidence = (
-            timeline_score * 0.30 +
-            applicant_score * 0.40 +
-            market_score * 0.20 +
-            family_score * 0.10
+            timeline_score * 0.25 +      # Reduced from 0.30
+            applicant_score * 0.50 +     # Increased from 0.40
+            market_score * 0.10 +        # Reduced from 0.20
+            family_score * 0.15          # Increased from 0.10
         )
         
         # Never exceed 0.95 (0.95-1.00 reserved for PUBLISHED tier)
@@ -413,29 +416,29 @@ class PredictiveInferenceEngine:
             "factors": {
                 "pct_timeline": {
                     "score": round(timeline_score, 2),
-                    "weight": 0.30,
+                    "weight": 0.25,  # Updated
                     "reasoning": timeline_reasoning
                 },
                 "applicant_behavior": {
                     "score": round(applicant_score, 2),
-                    "weight": 0.40,
+                    "weight": 0.50,  # Updated
                     "historical_br_filing_rate": f"{applicant.filing_rate:.0%} ({applicant.total_br_filings_found}/{applicant.total_wo_brazil_designated})",
                     "reasoning": applicant_reasoning
                 },
                 "market_relevance": {
                     "score": round(market_score, 2),
-                    "weight": 0.20,
+                    "weight": 0.10,  # Updated
                     "therapeutic_area": market.therapeutic_area,
                     "reasoning": market_reasoning
                 },
                 "patent_family_strength": {
                     "score": round(family_score, 2),
-                    "weight": 0.10,
+                    "weight": 0.15,  # Updated
                     "family_size": family_size,
                     "reasoning": family_reasoning
                 }
             },
-            "combined_methodology": f"Weighted: PCT({timeline_score:.2f})×0.3 + Applicant({applicant_score:.2f})×0.4 + Market({market_score:.2f})×0.2 + Family({family_score:.2f})×0.1 = {overall_confidence:.2f}"
+            "combined_methodology": f"Weighted: PCT({timeline_score:.2f})×0.25 + Applicant({applicant_score:.2f})×0.50 + Market({market_score:.2f})×0.10 + Family({family_score:.2f})×0.15 = {overall_confidence:.2f}"
         }
     
     def classify_tier(self, confidence: float) -> str:

@@ -75,8 +75,9 @@ except ImportError:
 EPO_KEY = "G5wJypxeg0GXEJoMGP37tdK370aKxeMszGKAkD6QaR0yiR5X"
 EPO_SECRET = "zg5AJ0EDzXdJey3GaFNM8ztMVxHKXRrAihXH93iS5ZAzKPAPMFLuVUfiEuAqpdbz"
 
-# INPI Credentials
-INPI_PASSWORD = "coresxxx"
+# INPI Credentials - FROM ENVIRONMENT VARIABLES
+INPI_USERNAME = getenv("INPI_USERNAME", "innova1234")  # Default fallback
+INPI_PASSWORD = getenv("INPI_PASSWORD", "coresxxx")    # Default fallback
 
 
 def format_date(date_str: str) -> str:
@@ -353,7 +354,7 @@ async def search_epo(client: httpx.AsyncClient, token: str, query: str) -> List[
     try:
         response = await client.get(
             "https://ops.epo.org/3.2/rest-services/published-data/search",
-            params={"q": query, "Range": "1-100"},
+            params={"q": query, "Range": "1-50"},
             headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
             timeout=30.0
         )
@@ -390,7 +391,7 @@ async def search_citations(client: httpx.AsyncClient, token: str, wo_number: str
         query = f'ct="{wo_number}"'
         response = await client.get(
             "https://ops.epo.org/3.2/rest-services/published-data/search",
-            params={"q": query, "Range": "1-100"},
+            params={"q": query, "Range": "1-50"},
             headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
             timeout=30.0
         )
@@ -1426,6 +1427,11 @@ async def search_patents(request: SearchRequest, progress_callback=None):
         for patent in br_patents_merged:
             br_num = patent.get("patent_number")
             
+            # v30.5: Skip BRPI* (formato antigo não encontrado no INPI)
+            if br_num and br_num.upper().startswith("BRPI"):
+                logger.debug(f"   ⏭️  Skipping {br_num} (BRPI format not searchable in INPI)")
+                continue
+            
             # Check if already has complete INPI data
             has_complete_data = (
                 patent.get("source") == "INPI" and
@@ -1461,7 +1467,7 @@ async def search_patents(request: SearchRequest, progress_callback=None):
                     # Search INPI for this batch
                     batch_results = await inpi_crawler.search_by_numbers(
                         batch,
-                        username="dnm48",
+                        username=INPI_USERNAME,
                         password=INPI_PASSWORD
                     )
                     
