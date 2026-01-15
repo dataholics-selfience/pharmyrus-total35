@@ -348,13 +348,16 @@ class PredictiveInferenceEngine:
         if timeline.is_within_filing_window(self.reference_date):
             days_left = timeline.days_until_deadline(self.reference_date)
             
-            if days_left > 180:  # >6 months
+            if days_left > 365:  # >12 months - muito tempo ainda
+                timeline_score = 0.70
+                timeline_reasoning = f"{days_left} days until deadline (very early stage)"
+            elif days_left > 180:  # 6-12 months - momento típico
                 timeline_score = 0.85
-                timeline_reasoning = f"{days_left} days until deadline (ample time)"
-            elif days_left > 90:  # 3-6 months
-                timeline_score = 0.90
                 timeline_reasoning = f"{days_left} days until deadline (typical filing window)"
-            else:  # <3 months
+            elif days_left > 90:  # 3-6 months - ficando próximo
+                timeline_score = 0.92
+                timeline_reasoning = f"{days_left} days until deadline (approaching deadline)"
+            else:  # <3 months - iminente
                 timeline_score = 0.95
                 timeline_reasoning = f"{days_left} days until deadline (imminent filing expected)"
         else:
@@ -374,15 +377,21 @@ class PredictiveInferenceEngine:
         market_reasoning = market.get_description()
         
         # Component 4: Patent Family (10% weight)
-        if family_size >= 15:
-            family_score = 0.90
+        if family_size >= 20:
+            family_score = 0.95
+            family_reasoning = f"Very large family ({family_size} members) indicates exceptional commercial value"
+        elif family_size >= 15:
+            family_score = 0.88
             family_reasoning = f"Large family ({family_size} members) indicates high commercial value"
         elif family_size >= 8:
-            family_score = 0.80
+            family_score = 0.75
             family_reasoning = f"Medium family ({family_size} members) indicates moderate commercial value"
+        elif family_size >= 4:
+            family_score = 0.60
+            family_reasoning = f"Small family ({family_size} members) indicates limited commercial value"
         else:
-            family_score = 0.70
-            family_reasoning = f"Small family ({family_size} members)"
+            family_score = 0.45
+            family_reasoning = f"Very small family ({family_size} members) indicates minimal commercial interest"
         
         # Weighted combination
         overall_confidence = (
@@ -433,6 +442,14 @@ class PredictiveInferenceEngine:
         """
         Classify confidence score into certainty tier.
         
+        RECALIBRATED THRESHOLDS (v30.4):
+        - PUBLISHED: 0.95-1.00 (already found in databases)
+        - FOUND: 0.85-0.94 (very high certainty, likely filed)
+        - INFERRED: 0.72-0.84 (strong evidence from PCT + applicant)
+        - EXPECTED: 0.58-0.71 (moderate confidence based on patterns)
+        - PREDICTED: 0.40-0.57 (lower confidence, speculative)
+        - SPECULATIVE: 0.00-0.39 (very uncertain or deadline passed)
+        
         Args:
             confidence: Confidence score (0.0 to 1.0)
         
@@ -443,11 +460,11 @@ class PredictiveInferenceEngine:
             return "PUBLISHED"
         elif confidence >= 0.85:
             return "FOUND"
-        elif confidence >= 0.70:
+        elif confidence >= 0.72:  # Ajustado de 0.70
             return "INFERRED"
-        elif confidence >= 0.50:
+        elif confidence >= 0.58:  # Ajustado de 0.50
             return "EXPECTED"
-        elif confidence >= 0.30:
+        elif confidence >= 0.40:  # Ajustado de 0.30
             return "PREDICTED"
         else:
             return "SPECULATIVE"

@@ -89,6 +89,30 @@ def format_date(date_str: str) -> str:
         return date_str
 
 
+def clean_br_number(br_number: str) -> str:
+    """
+    Remove extensão de publicação de números BR para buscas no INPI/EPO
+    
+    Exemplos:
+        BR112019017103A2 -> BR112019017103
+        BR102015032361B1 -> BR102015032361
+        BRPI1011363 -> BRPI1011363 (sem extensão, mantém)
+    
+    Padrão: Remove últimos 2 caracteres se forem LETRA + NÚMERO
+    """
+    if not br_number or len(br_number) < 3:
+        return br_number
+    
+    # Verificar se termina com padrão LetraNúmero (ex: A2, B1, C3)
+    last_two = br_number[-2:]
+    if len(last_two) == 2 and last_two[0].isalpha() and last_two[1].isdigit():
+        cleaned = br_number[:-2]
+        logger.debug(f"Cleaned BR: {br_number} -> {cleaned}")
+        return cleaned
+    
+    return br_number
+
+
 def group_patent_families(wo_patents: List[Dict], country_patents: Dict[str, List[Dict]]) -> List[Dict]:
     """
     Agrupa WOs com suas patentes nacionais (famílias)
@@ -246,10 +270,32 @@ async def get_pubchem_data(client: httpx.AsyncClient, molecule: str) -> Dict:
             dev_codes = []
             cas = None
             
+            # Whitelist MÍNIMA de databases MUITO conhecidos (apenas os mais comuns)
+            known_db_prefixes = ['GTPL', 'CHEMBL', 'CHEBI', 'ZINC', 'SCHEMBL', 'AKOS', 'BDBM']
+            
             for syn in synonyms[:100]:
-                if re.match(r'^[A-Z]{2,5}-?\d{3,7}[A-Z]?$', syn, re.I) and len(syn) < 20:
+                # Skip muito longos
+                if len(syn) > 15:
+                    continue
+                
+                # Skip databases conhecidos (whitelist mínima)
+                if any(syn.upper().startswith(prefix) for prefix in known_db_prefixes):
+                    continue
+                
+                # Skip IDs com 7+ dígitos consecutivos (mas aceitar se tiver hífen separando)
+                # Rejeita: orb1307329 (7 dígitos sem hífen)
+                # Aceita: BMS-986205 (6 dígitos mas COM hífen)
+                if re.search(r'\d{7,}', syn):
+                    continue
+                
+                # Dev codes farmacêuticos REAIS
+                # Formato: 2-5 letras, opcional hífen, 2-6 dígitos, opcional letra final
+                # Aceita: CYT-387, GS-0387, NSC-755, MLN4924, BMS-986205, GLXC03525
+                if re.match(r'^[A-Z]{2,5}-?\d{2,6}[A-Z]?$', syn, re.I):
                     if syn not in dev_codes:
                         dev_codes.append(syn)
+                
+                # CAS number
                 if re.match(r'^\d{2,7}-\d{2}-\d$', syn) and not cas:
                     cas = syn
             
@@ -289,21 +335,13 @@ def build_search_queries(molecule: str, brand: str, dev_codes: List[str], cas: s
     if cas:
         queries.append(f'txt="{cas}"')
     
-    # 5. Applicants conhecidos + keywords terapêuticas (CRÍTICO!)
-    applicants = ["Orion", "Bayer", "AstraZeneca", "Pfizer", "Novartis", "Roche", "Merck", "Johnson", "Bristol-Myers"]
-    keywords = ["androgen", "receptor", "crystalline", "pharmaceutical", "process", "formulation", 
-                "prostate", "cancer", "inhibitor", "modulating", "antagonist"]
-    
-    for app in applicants[:5]:
-        for kw in keywords[:4]:
-            queries.append(f'pa="{app}" and ti="{kw}"')
-    
-    # 6. Queries específicas para classes terapêuticas
-    queries.append('txt="nonsteroidal antiandrogen"')
-    queries.append('txt="androgen receptor antagonist"')
-    queries.append('txt="nmCRPC"')
-    queries.append('txt="non-metastatic" and txt="castration-resistant"')
-    queries.append('ti="androgen receptor" and ti="inhibitor"')
+    # REMOVED: Hardcoded Darolutamide-specific queries
+    # These were causing false positives for other molecules:
+    # - "nonsteroidal antiandrogen"
+    # - "androgen receptor antagonist"  
+    # - "nmCRPC"
+    # - "non-metastatic castration-resistant"
+    # - "androgen receptor inhibitor"
     
     return queries
 
@@ -469,7 +507,10 @@ async def get_family_patents(client: httpx.AsyncClient, token: str, wo_number: s
                 kind = doc_id.get("kind", {}).get("$", "")
                 
                 if country in target_countries and number:
+                    # Criar número base sem kind code
                     patent_num = f"{country}{number}"
+                    # Limpar extensão se vier no número (ex: BR112019017103A2 -> BR112019017103)
+                    patent_num = clean_br_number(patent_num) if country == "BR" else patent_num
                     
                     bib = member.get("exchange-document", {}).get("bibliographic-data", {}) if "exchange-document" in member else {}
                     
@@ -705,10 +746,11 @@ async def get_family_patents(client: httpx.AsyncClient, token: str, wo_number: s
 async def enrich_br_metadata(client: httpx.AsyncClient, token: str, patent_data: Dict) -> Dict:
     """Enriquece metadata de um BR via endpoint individual /published-data/publication/docdb/{BR}/biblio"""
     br_number = patent_data["patent_number"]
+    br_clean = clean_br_number(br_number)  # Remove A2, B1, etc.
     
     try:
         response = await client.get(
-            f"https://ops.epo.org/3.2/rest-services/published-data/publication/docdb/{br_number}/biblio",
+            f"https://ops.epo.org/3.2/rest-services/published-data/publication/docdb/{br_clean}/biblio",
             headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
             timeout=15.0
         )
@@ -1394,7 +1436,8 @@ async def search_patents(request: SearchRequest, progress_callback=None):
             )
             
             if not has_complete_data and br_num:
-                br_numbers_to_enrich.append(br_num)
+                br_clean = clean_br_number(br_num)
+                br_numbers_to_enrich.append(br_clean)
         
         logger.info(f"   📊 Total BRs: {len(br_patents_merged)}")
         logger.info(f"   📊 BRs needing INPI enrichment: {len(br_numbers_to_enrich)}")
