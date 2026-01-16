@@ -27,6 +27,9 @@ COPY applicant_database.json .
 # Copy v30.4 enhanced reporting (1 file only)
 COPY enhanced_reporting.py .
 
+# Copy v30.6 dynamic confidence engine (1 file only)
+COPY dynamic_confidence_engine.py .
+
 # Railway uses PORT env variable
 ENV PORT=8080
 

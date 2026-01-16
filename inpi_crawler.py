@@ -847,7 +847,7 @@ class INPICrawler:
                 # Search each BR by number using ADVANCED SEARCH
                 for i, br_number in enumerate(br_numbers, 1):
                     max_retries = 2  # v30.5: Retry timeout errors
-                    retry_delay = 3  # seconds
+                    retry_delay = 5  # v30.6: 3s → 5s (backoff: 5s, 10s)
                     
                     for attempt in range(max_retries):
                         try:
@@ -864,17 +864,17 @@ class INPICrawler:
                             await self.page.goto(
                                 "https://busca.inpi.gov.br/pePI/jsp/patentes/PatenteSearchAvancado.jsp",
                                 wait_until='networkidle',
-                                timeout=30000
+                                timeout=60000  # v30.6: 30s → 60s
                             )
-                            await asyncio.sleep(1)
+                            await asyncio.sleep(2)  # v30.6: 1s → 2s
                             
                             # Fill NumPedido field (21) - Patent Number
-                            await self.page.fill('input[name="NumPedido"]', search_term, timeout=20000)
+                            await self.page.fill('input[name="NumPedido"]', search_term, timeout=60000)  # v30.6: 20s → 60s
                             
                             # Click Search button
-                            await self.page.click('input[type="submit"][name="botao"]', timeout=20000)
-                            await self.page.wait_for_load_state('networkidle', timeout=30000)
-                            await asyncio.sleep(2)
+                            await self.page.click('input[type="submit"][name="botao"]', timeout=60000)  # v30.6: 20s → 60s
+                            await self.page.wait_for_load_state('networkidle', timeout=60000)  # v30.6: 30s → 60s
+                            await asyncio.sleep(3)  # v30.6: 2s → 3s
                             
                             # Check results
                             content = await self.page.content()

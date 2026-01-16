@@ -795,9 +795,27 @@ def add_predictive_layer(
     
     logger.info(f"✅ Created {len(inferred_events)} inferred events")
     
+    # v30.6: Apply DYNAMIC RANK-BASED CLASSIFICATION
+    logger.info("🎯 Applying dynamic rank-based tier classification...")
+    
+    try:
+        from dynamic_confidence_engine import DynamicConfidenceEngine
+        
+        # Create engine and add all predictions
+        dynamic_engine = DynamicConfidenceEngine()
+        for event in inferred_events:
+            dynamic_engine.add_prediction(event)
+        
+        # Re-classify with forced distribution
+        inferred_events = dynamic_engine.finalize_and_classify()
+        
+        logger.info("✅ Dynamic classification applied successfully")
+    except Exception as e:
+        logger.warning(f"⚠️  Dynamic engine failed, using standard classification: {e}")
+    
     # Build tier summary
     tier_summary = {}
-    for tier in ["INFERRED", "EXPECTED", "PREDICTED", "SPECULATIVE"]:
+    for tier in ["FOUND", "INFERRED", "EXPECTED", "PREDICTED", "SPECULATIVE"]:  # Added FOUND
         count = sum(
             1 for e in inferred_events
             if e['brazilian_prediction']['confidence_analysis']['confidence_tier'] == tier
